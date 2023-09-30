@@ -1,0 +1,133 @@
+\documentclass{ctexart}
+
+\usepackage{ctex}
+\usepackage{tikz}
+\usetikzlibrary{calc,positioning,shapes.geometric}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{caption}
+\usepackage{subfigure}
+\usepackage{framed}
+\usepackage{booktabs}
+\usepackage{makecell}
+\usepackage{geometry}
+\usepackage{wrapfig}
+\usepackage{abstract}
+\usepackage{algorithmicx}
+\usepackage[ruled]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{setspace}
+\usepackage{bm}
+\usepackage{cite}
+\usepackage{array}
+\usepackage{textcomp}
+\usepackage{listings}
+
+\definecolor{shadecolor}{rgb}{0.93,0.93,0.93}
+\usepackage{geometry}
+\geometry{right=2.5cm,left=2.5cm}
+
+\newtheorem{theorem}{定理}
+
+\pagenumbering{arabic}
+
+\begin{document}
+\begin{sloppypar}
+\title{\vspace{-3cm} \textbf{数值分析第一章编程作业说明}}
+\author{刘陈若\;$3200104872$\\信息与计算科学2001}
+\date{}
+
+\maketitle
+
+\section*{程序编译和运行说明}
+本次项目作业采用Makefile文件对编译进行统一管理。具体地，在Makefile所在目录下输入\verb|make|
+即可完成编译，得到problem\verb|B|-problem\verb|F|的可执行文件\verb|B|,\verb|C|,\verb|D|,\verb|E|,\verb|F|。分别对其进行运行，即可得到各小题的输出结果。
+
+\section*{程序运行结果及简要分析}
+\subsection*{Problem A}
+问题A没有数值输出，其具体的要求都已经全部在头文件\verb|equationsolver.h|中得到实现。值得注意的是，\verb|equationsolver.h|中还通过构建基类Function完成对用户函数输入的规范化。
+
+\subsection*{Problem B}
+问题B需要对四个函数使用二分法分别求根，其具体输出如下：
+\begin{shaded}
+\begin{verbatim}
+root of function 1 is r1 =  0.860334, f(r) = 0
+root of function 2 is r2 =  0.641186, f(r) = 0
+root of function 3 is r3 =  1.82938, f(r) = 0
+root of function 4 is r4 =  0.117877, f(r) = -1.21841e+16
+\end{verbatim}
+\end{shaded}
+
+可以看出，函数4运用二分法的结果非常糟糕，计算得到的根实际的函数值趋向无穷大。对此的解释为：函数4在区间$[0,4]$中不是连续的，因此不符合二分法对函数的连续性要求，实际求得的根将会接近于奇点。
+
+\subsection*{Problem C}
+问题C需要对方程$x = tanx$运用牛顿法求出其在4.5以及7.7附近的根，其具体输出如下：
+\begin{shaded}
+\begin{verbatim}
+root near 4.5 is r1 =  4.49341, f(r) = -8.88178e-16
+root near 7.7 is r2 =  7.72525, f(r) = 2.30926e-14
+\end{verbatim}
+\end{shaded}
+可以发现牛顿法在本题中的运用是较为理想的。
+
+\subsection*{Problem D}
+问题D首先对三个函数用割线法求根。其次，对于方程1,将其初始值的$x_1$更改为$4.5\pi$；对于方程2,将其初始值$x_1$更改为5.4；对于方程3,将其初始值更改为0.35和0.45，可以得到不同的求根结果。其具体输出如下：
+\begin{shaded}
+\begin{verbatim}
+root of function 1 is r1 =  3.14159, f(r) = -1.11022e-16
+root of function 1 with different initial values is r1 =  15.708, f(r) = -1.11022e-16
+root of function 2 is r2 =  1.30633, f(r) = -4.44089e-16
+root of function 2 with different initial values is r2 =  0.918663, f(r) = 1.19631
+root of function 3 is r3 =  -0.188685, f(r) = 0
+root of function 3 with different initial values is r3 =  0.451543, f(r) = 2.22045e-16
+\end{verbatim}
+\end{shaded}
+可以看出，割线法求根的精确度和初始值$x_0$，$x_1$更加密切相关。当初始值较接近真实根的时候，结果较为准确；当初始值$x_0$，$x_1$位于不同位置或者间距过大，可能会收敛到方程其它的根；当$x_0$，$x_1$中含有方程的奇点时，割线法可能会在较长时间内无法收敛或者收敛停止到非真实根处。
+
+\subsection*{Problem E}
+问题E需要对水槽中水的深度（在本说明中理解为$r-h$）分别使用二分法，牛顿法和割线法进行精确到0.01的估计。其具体输出如下：
+\begin{shaded}
+\begin{verbatim}
+root using Bisection Method is h =  0.16875, f(h) = 0.0509495 and the depth is: 0.83125
+root using Newton Method is h =  0.166166, f(h) = 0 and the depth is: 0.833834
+root using Secant Method is h =  0.166165, f(h) = -2.13731e-05 and the depth is:
+0.833835
+\end{verbatim}
+\end{shaded}
+输出的结果都已经满足题目要求了。但需要说明的是，为了达到0.01的精度，实际上在三种方法中设置的停止条件和初始条件要更为严苛一些。
+
+\subsection*{Problem E}
+\subsubsection*{(a)}
+本题中需要对题目给出的方程中运用牛顿法求得最大可能角度$\alpha$的值，并证实$\alpha \approx33°$。其具体输出如下：
+\begin{shaded}
+\begin{verbatim}
+root using Newton Method in (a) is alpha = 32.9722°, f(alpha) = 0
+\end{verbatim}
+\end{shaded}
+\subsubsection*{(b)}
+本题中需要对修改参数$D=30$后的方程中运用牛顿法求得最大可能角度$\alpha$的值。其具体输出如下：
+\begin{shaded}
+\begin{verbatim}
+root using Newton Method in (b) is alpha = 33.1689°, f(alpha) = 0
+\end{verbatim}
+\end{shaded}
+\subsubsection*{(c)}
+本题中首先需要对题目给出的方程中运用割线法求得最大可能角度$\alpha$的值。其次，通过改变远离$33°$的初始值（接近$180°$），可以得到不同的结果。其具体输出如下：
+\begin{shaded}
+\begin{verbatim}
+root using Secand Method in (c) is alpha = 32.9722°, f(alpha) = 0
+root using Secand Method with different initial value in (c) is alpha = 168.5°, 
+f(alpha) = -3.55271e-15
+\end{verbatim}
+\end{shaded}
+可以发现，当初始值远离$33°$时，求得的根发生了变化，且精度也略有区别。这是因为，通过软件$GeoGebra$画图可得，函数的根并不唯一，因此当初始值发生改变，收敛的根也会发生改变，且根据问题$D$中的分析，当初始值改变的幅度不同，得到的根的位置的误差也会不同。
+
+\end{sloppypar}
+\end{document}

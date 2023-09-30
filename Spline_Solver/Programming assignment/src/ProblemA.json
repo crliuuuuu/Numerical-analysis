@@ -1,0 +1,8 @@
+{
+    "interval_left" : -1,
+    "interval_right" : 1,
+    "n": [6,11,21,41,81],
+    "method": 1,
+    "order": 3
+}
+
