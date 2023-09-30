@@ -6,7 +6,6 @@
 #include <vector>
 #include <jsoncpp/json/json.h>
 
-//在此处修改样条形式：Bspline_interpolation 或 ppForm_interpolation
 #define Spline_Form Bspline_interpolation 
 
 class Fun : public Function

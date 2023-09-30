@@ -6,46 +6,40 @@
 #include <eigen3/Eigen/Sparse>
 
 
-/*
-    定义函数类
-*/
+
 class Function
 {
 public:
-    virtual double operator()(double _x) = 0; // 返回函数在_x处的值
-    virtual double diff(double _x) // 返回函数在_x处的一阶导数值
+    virtual double operator()(double _x) = 0; 
+    virtual double diff(double _x) 
     {
-        return 0;  // 默认值为0
+        return 0;  
     }
-        virtual double diff_2(double _x) // 返回函数在_x处的二阶导数值
+        virtual double diff_2(double _x) 
     {
-        return 0;  // 默认值为0
+        return 0;  
     }
 };
 
-/*
-    定义插值类
-*/
+
 class Interpolation
 {
 public:
-    virtual void solve() = 0;  // 插值算法
-    virtual double operator()(double _x) //返回插值函数在_x处的值
+    virtual void solve() = 0;  
+    virtual double operator()(double _x) 
     {
-        return 0;  // 默认值为0
+        return 0; 
     }  
 };
 
-/*
-    B样条基函数
-*/
+
 class B_spline : public Function
 {
 private:
     std::vector<double> t;
     int dim;
 public:
-    B_spline(int _dim, std::vector<double> _t): dim(_dim), t(_t)  // dim: B样条阶数； t: [t_{i-1} to t_{i+dim}]
+    B_spline(int _dim, std::vector<double> _t): dim(_dim), t(_t)  // dim: Order of the B-spline; t: [t_{i-1} to t_{i+dim}]
     {
         if (dim != t.size() - 2)
 	    {
@@ -59,7 +53,7 @@ public:
         std::vector<double> t2(t.begin() + 1, t.end());
         B_spline B1(dim - 1, t1);
         B_spline B2(dim - 1, t2);
-        if (dim == 1)  // 1阶B样条集基函数直接给出表达式返回值，否则利用B样条的递推式进行递归
+        if (dim == 1)  // For 1st order B-spline basis functions, directly return the expression value, otherwise, use the recursive formula of the B-spline for recursion
         {
             if (_x > t[0] && _x < t[1])
                 return (_x - t[0])/(t[1] - t[0]);
@@ -75,9 +69,7 @@ public:
     }
 };
 
-/*
-    多项式函数
-*/
+
 class Polynomial : public Function
 {
 private:
@@ -86,8 +78,8 @@ private:
     int n;
 public:
     /*
-        输入Coef = [a_0,...a_n], base = x_0
-        构造多项式函数 f(x) = a_0 + ... + a_n*(x - x_0)^n
+    Input Coef = [a_0,...a_n], base = x_0
+    Construct a polynomial function f(x) = a_0 + ... + a_n*(x - x_0)^n
     */
     Polynomial(std::vector<double> _Coef, double _base): Coef(_Coef), x_0(_base) {}
     double operator()(double _x)
@@ -108,7 +100,7 @@ public:
 };
 
 /*
-    离散形式的函数（曲线拟合时统一输入形式用）
+    Discrete form of the function (used for unified input form during curve fitting)
 */
 class Discrete_function : public Function
 {
@@ -117,8 +109,8 @@ private:
     int n;
 public:
     /*
-        Point:函数的离散点集；
-        Value, dF, sec_dF:函数在点集处取值，一阶导数和二阶导数
+    Point: Discrete point set of the function;
+    Value, dF, sec_dF: Function values, first derivative and second derivative at the point set
     */
     Discrete_function(std::vector<double> _Point, std::vector<double> _Value, std::vector<double> _dF, std::vector<double> _sec_dF): Point(_Point), Value(_Value), dF(_dF), sec_dF(_sec_dF) 
     {
@@ -175,7 +167,7 @@ public:
 };
 
 /*
-    利用B样条基函数进行插值
+    Carry out interpolation using B-spline basis functions
 */
 class Bspline_interpolation : public Interpolation
 {
@@ -183,14 +175,14 @@ private:
     std::vector<double> Point, add_point1, add_point2;
     std::vector<B_spline> B;
     Function &f;
-    int n, method, order; // n：样本点个数
-    Eigen::VectorXd coef_x; // coef_x：解方程最终得到的系数
+    int n, method, order; // n: number of sample points 
+    Eigen::VectorXd coef_x; // coef_x: coefficients obtained after solving the equation
 public:
     /*
-        f:待插值函数；Point：插值点t_1,...t_n；
-        method：插值边界条件（1为complete cubic spline, 2为cubic spline with specified derivatives, 3为natural cubic spline），
-                线性样条method输入1-3不作区分；
-        order：插值样条基函数阶数（1为线性样条，3为三次样条）
+    f: function to be interpolated; Point: interpolation points t_1,...t_n;
+    method: interpolation boundary conditions (1 for complete cubic spline, 2 for cubic spline with specified derivatives, 3 for natural cubic spline),
+            no difference for linear spline when method input is 1-3;
+    order: order of interpolation spline basis function (1 for linear spline, 3 for cubic spline)
     */
     Bspline_interpolation(Function &_f, std::vector<double> _Point, int _method, int _order): f(_f), Point(_Point), method(_method), order(_order)
     {
@@ -207,7 +199,6 @@ public:
 
         n = Point.size();
 
-        // 加入B样条基函数需要的额外点
         if (order == 3)
         {
             add_point1 = {Point[0]-3*(Point[1]-Point[0]), Point[0]-2*(Point[1]-Point[0]), Point[0]-1*(Point[1]-Point[0])};
@@ -219,18 +210,14 @@ public:
             add_point2 = {Point[n-1]+1*(Point[1]-Point[0])};
         }
 
-        /*
-            将需要用到的其他插值点一起加入至Point中
-            order = 3时，此时Point:插值点t_{-2},...t_{n+3}；
-            order = 1时，此时Point:插值点t_{0},...t_{n+1}；
-        */
+
         Point.insert(Point.begin(), add_point1.begin(), add_point1.end());
         Point.insert(Point.end(), add_point2.begin(), add_point2.end());
         for (int i = 2-order; i < n + 1; i++)
             {
                 std::vector<double> v(Point.begin()+i-2+order, Point.begin()+i+2*order);
                 B_spline b(order, v);
-                B.push_back(b); // B存储需要用的所有B样条基函数
+                B.push_back(b); 
             }
     }
 
@@ -241,7 +228,7 @@ public:
             Eigen::SparseMatrix<double> A(n+2, n+2);
             std::vector<Eigen::Triplet<double> > tripletlist;
             Eigen::MatrixXd y(n+2,1); 
-            y = Eigen::MatrixXd::Zero(n+2, 1); // 解方程Ax = y
+            y = Eigen::MatrixXd::Zero(n+2, 1); // Solving the equation Ax = y
 
             for (int i = 1; i < n + 1; i++)
 		    {
@@ -300,7 +287,7 @@ public:
             Eigen::SparseMatrix<double> A(n, n);
             std::vector<Eigen::Triplet<double> > tripletlist;
             Eigen::MatrixXd y(n, 1); 
-            y = Eigen::MatrixXd::Zero(n, 1); // 解方程Ax = y
+            y = Eigen::MatrixXd::Zero(n, 1); // Solving the equation Ax = y
 
             for (int i = 0; i < n; i++)
 		    {
@@ -317,7 +304,7 @@ public:
     }
 
     /*
-        返回插值函数在_x处的函数值
+    Return the function value of the interpolation function at _x
     */
     double operator()(double _x)
     {
@@ -337,7 +324,6 @@ public:
                 pos = pos + 1;
             }
             
-            // 最多只有4个B样条基函数在_x处取值非零
             return coef_x(pos-1)*B[pos-1](_x) + coef_x(pos)*B[pos](_x) + coef_x(pos+1)*B[pos+1](_x) + coef_x(pos+2)*B[pos+2](_x);    
         }
         if (order == 1)
@@ -356,14 +342,13 @@ public:
                 pos = pos + 1;
             }
 
-            // 最多只有2个B样条基函数在_x处取值非零
             return coef_x(pos-1)*B[pos-1](_x) + coef_x(pos)*B[pos](_x);      
         }
         return 0;    
     }
 
     /*
-        如有需要，Get_coef()函数返回插值多项式的相应系数
+    If necessary, the Get_coef() function returns the corresponding coefficients of the interpolation polynomial
     */
     Eigen::VectorXd Get_coef()
     {
@@ -372,23 +357,23 @@ public:
 };
 
 /*
-    利用分段多项式进行插值
+    Carry out interpolation using piecewise polynomials
 */
 class ppForm_interpolation : public Interpolation
 {
 private:
     std::vector<double> Point;
     Function &f;
-    std::vector<Polynomial> P; // 存储插值得到的n-1个分段多项式
-    std::vector<std::vector<double> > C; // 存储分段多项式的系数
-    int n, method, order; // n：样本点个数
-    Eigen::VectorXd coef_m; // coef_m：解方程最终得到的系数(一阶导数m)
+    std::vector<Polynomial> P; // Store n-1 piecewise polynomials obtained from interpolation 
+    std::vector<std::vector<double> > C; // Store coefficients of the piecewise polynomial
+    int n, method, order; // n: number of sample points 
+    Eigen::VectorXd coef_m; // coef_m: coefficients obtained after solving the equation
 public:
     /*
-        f:待插值函数；Point：插值点t_1,...t_n；
-        method：插值边界条件（1为complete cubic spline, 2为cubic spline with specified derivatives, 3为natural cubic spline）；
-                线性样条method输入1-3不作区分；
-        order：插值样条基函数阶数（1为线性样条，3为三次样条）
+    f: function to be interpolated; Point: interpolation points t_1,...t_n;
+    method: interpolation boundary conditions (1 for complete cubic spline, 2 for cubic spline with specified derivatives, 3 for natural cubic spline);
+            no difference for linear spline when method input is 1-3;
+    order: order of interpolation spline basis function (1 for linear spline, 3 for cubic spline)
     */
     ppForm_interpolation(Function &_f, std::vector<double> _Point, int _method, int _order): f(_f), Point(_Point), method(_method), order(_order)
     {
@@ -413,7 +398,7 @@ public:
             Eigen::SparseMatrix<double> A(n, n);
             std::vector<Eigen::Triplet<double> > tripletlist;
             Eigen::MatrixXd y(n, 1); 
-            y = Eigen::MatrixXd::Zero(n, 1); // 解方程Am = y
+            y = Eigen::MatrixXd::Zero(n, 1); 
 
             for (int i = 1; i < n - 1; i++)
 		    {
@@ -487,7 +472,7 @@ public:
     }
 
     /*
-        返回插值函数在_x处的函数值
+    Return the function value of the interpolation function at _x
     */
     double operator()(double _x)
     {
@@ -499,7 +484,6 @@ public:
         if (_x == Point[0])
             return f(Point[0]);
 
-        // 寻找对应区间的多项式
         int pos = 1;
         while (_x > Point[pos])
         {
@@ -513,7 +497,7 @@ public:
     }
 
     /*
-        如有需要，Get_coef()函数返回插值多项式的分段相应系数
+    If necessary, the Get_coef() function returns the corresponding coefficients of the piecewise interpolation polynomial
     */
     std::vector<std::vector<double> > Get_coef()
     {
@@ -521,21 +505,21 @@ public:
     }
 };
 
- /*
-    曲线样条插值
+/*
+    Carry out spline interpolation for curves
 */
 class curve_spline : public Interpolation
 {
 private:
     const double interval = 0.01;
-    std::vector<std::vector<double> > Point, Fit_Point; // 其中Fit_Point共有d个vector, 每个vector存储Point中某一维的插值结果。
-    std::vector<double> cc_length; // 存储cumulative chordal length
+    std::vector<std::vector<double> > Point, Fit_Point; 
+    std::vector<double> cc_length; // Store cumulative chordal length
     int n, d, method, order; 
 public:
     /*
-        Point：曲线上的采样点（若有n个点，每个点是d维的，则输入n*d的二维vector）；
-        method：插值方法（1为B样条插值，2为ppForm）
-        order：插值样条基函数阶数（1为线性样条，3为三次样条）
+    Point: sample points on the curve (if there are n points, each point is d-dimensional, then input a 2D vector of n*d);
+    method: interpolation method (1 for B-spline interpolation, 2 for ppForm)
+    order: order of interpolation spline basis function (1 for linear spline, 3 for cubic spline)
     */
     curve_spline(std::vector<std::vector<double> > _Point, int _method, int _order): Point(_Point), method(_method), order(_order)
     {
@@ -563,9 +547,7 @@ public:
 		}
     }
 
-    /*
-        返回向量x和y的二范数距离。
-    */
+
     double norm_2(std::vector<double> x, std::vector<double> y)
     {
         double dist = 0.0;
@@ -579,14 +561,13 @@ public:
 
     void solve()
     {
-        // 计算cumulative chordal length
+        // calculate the cumulative chordal length
         cc_length.push_back(0.0);
         for (int i = 1; i < n; i++)
 		{
             cc_length.push_back(cc_length[i-1] + norm_2(Point[i], Point[i-1]));
 		}
 
-        // 点集的每一个分量分别关于cumulative chordal length进行样条插值
         std::vector<double> EMPTY(n);
         for (int i = 0; i < d; i++)
 		{
@@ -623,7 +604,7 @@ public:
     }
 
     /*
-        Get_Point()函数返回d个vector，第i个vector表示曲线样条插值后等间隔采点的第i个分量
+    Get_Point() function returns d vectors, where the i-th vector represents the i-th component of the points sampled at equal intervals after the curve spline interpolation
     */
     std::vector<std::vector<double> > Get_Point()
     {

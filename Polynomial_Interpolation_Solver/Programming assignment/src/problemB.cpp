@@ -20,9 +20,6 @@ int main()
     fout.open("probB_result.txt");
     Fun f;
 
-    /*
-        分别对不同n的值对应的插值函数进行秒点采样，并将采样数据存储至probB_result.txt文件以便导入至Python画图
-    */
     for (int k = 1; k < 5; k++)
     {
         std::vector<double> v;

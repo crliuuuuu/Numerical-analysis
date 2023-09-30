@@ -6,18 +6,14 @@
 
 double eps = std::numeric_limits<float>::epsilon();
 
-/*
-    定义函数类，对不同函数进行运算符()的重载
-*/
+
 class Function
 {
 public:
     virtual double operator()(double _x) = 0;
 };
 
-/*
-    定义插值类，抽象Newton插值和Hermite插值
-*/
+
 class Interpolation
 {
 public:
@@ -25,7 +21,7 @@ public:
 };
 
 /*
-    Newton插值多项式继承函数类，给定系数a_k即可唯一表示对应的函数
+    Newton polynomial
 */
 class Newton_polynomial : public Function
 {
@@ -52,7 +48,7 @@ public:
 };
 
 /*
-    Hermite插值多项式继承函数类，给定系数a_k即可唯一表示对应的函数
+    Hermite polynomial
 */
 class Hermite_polynomial : public Function
 {
@@ -79,7 +75,7 @@ public:
 };
 
 /*
-    利用Newton插值公式进行插值，继承插值类
+    Interpolation using Newton's Interpolation Formula
 */
 class Newton_Formula : public Interpolation
 {
@@ -88,7 +84,8 @@ private:
     Function &f;
     int n;
 public:
-    //构造函数，输入待插值函数_f和插值点_X后,利用差商求出Newton插值多项式系数
+    // Constructor function, after inputting the function _f to be interpolated and the interpolation point _X, 
+    // use the difference quotient to find the coefficients of the Newton interpolation polynomial
     Newton_Formula(Function &_f, std::vector<double> _X): f(_f), X(_X) 
     {
         n = X.size();
@@ -109,15 +106,14 @@ public:
             Coef.push_back(table[i][i]);
         }
     }
-    //根据题意，solve()函数返回Newton插值多项式任意一点对应的多项式值
+    // solve() function returns the polynomial value corresponding to any point of the Newton interpolation polynomial
     double solve(double _x)
     {
         Newton_polynomial Pn(Coef, X);
         return Pn(_x);
     }
     /*
-        如有需要，Get_coef()函数返回Newton插值多项式的相应系数
-        注意：根据题意，希望能将系数封装在类内，因此除了实验报告展示之外，应尽量避免使用该函数
+    If needed, the Get_coef() function returns the corresponding coefficients of the Newton interpolation polynomial
     */
     std::vector<double> Get_coef()
     {
@@ -126,7 +122,7 @@ public:
 };
 
 /*
-    利用Hermite插值公式进行插值，继承插值类
+    Interpolation using Hermite Interpolation Formula, inherits from Interpolation class
 */
 class Hermite_Formula : public Interpolation
 {
@@ -135,8 +131,11 @@ private:
     int n;
 public:
     /*
-        构造函数，输入待插值点_Label以及每一个插值点对应的函数（或其导数值）_X后,利用差商求出Hermite插值多项式系数
-        注意，待插值点在_Label和_X中的输入排序需要满足：1.相同的插值点需要相邻；2.相同的插值点对应的函数或其导数值按导数阶数升序相邻排列。
+    Constructor function, after inputting the interpolation point _Label and the function (or its derivative value) _X corresponding to each interpolation point,
+    use the difference quotient to find the coefficients of the Hermite interpolation polynomial
+    Note that the input order of the interpolation points in _Label and _X needs to meet: 
+    1. The same interpolation points need to be adjacent; 
+    2. The function or its derivative values corresponding to the same interpolation points should be arranged in ascending order of derivative order.
     */
     Hermite_Formula(std::vector<double> _Label, std::vector<double> _X): Label(_Label), X(_X)
     {
@@ -167,21 +166,20 @@ public:
             Coef.push_back(table[i][i]);
         }
     }
-    //根据题意，solve()函数返回Hermite插值多项式任意一点对应的多项式值
+    // the solve() function returns the polynomial value corresponding to any point of the Hermite interpolation polynomial
     double solve(double _x)
     {
         Newton_polynomial Pn(Coef, Label);
         return Pn(_x);
     }
-    //由于题目要求，solvediff()函数返回插值多项式在_x点处的导数
+    // Due to the problem requirements, the solvediff() function returns the derivative of the interpolation polynomial at the point _x
     double solvediff(double _x)
     {
         Newton_polynomial Pn(Coef, Label);
         return (Pn(_x + eps) - Pn(_x - eps))/(2.0*eps);
     }
     /*
-        如有需要，Get_coef()函数返回Hermite插值多项式的相应系数
-        注意：根据题意，希望能将系数封装在类内，因此除了实验报告展示之外，应尽量避免使用该函数
+    If needed, the Get_coef() function returns the corresponding coefficients of the Hermite interpolation polynomial
     */
     std::vector<double> Get_coef()
     {

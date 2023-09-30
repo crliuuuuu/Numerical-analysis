@@ -88,9 +88,6 @@ int main()
     Newton_Formula b2(Sp2, v2);
     std::vector<double> Coef1,Coef2;
 
-    /*
-        为方便报告展示，记录两类样本对应的插值函数系数和15天后预测的Average Weight值
-    */
     Coef1 = b1.Get_coef();
     Coef2 = b2.Get_coef();
     std::cout << "The Coefficients of curve for Sp1 are: ";
@@ -109,7 +106,8 @@ int main()
     std::cout << "Average weight of Sp2 after another 15 days is: " << b2.solve(43.0) << std::endl;
 
     /*
-        分别对插值函数进行描点采样，并将采样数据存储至probE_result.txt文件以便导入至Python画图
+    Determine the maximum speed in the observed process, sample the interpolation function by plotting points, 
+    and store the sampled data in the probE_result.txt file for importing and plotting in Python.
     */
     fout << "Sampling average weight of Sp1 with interval 0.01 in [0,28]" << std::endl;
     for (int i = 0; i < 2800; i++)

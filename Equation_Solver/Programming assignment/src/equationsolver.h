@@ -11,7 +11,7 @@ public:
     virtual double operator()(double _x) = 0;
     virtual double diff(double _x) 
     {
-        return 0;  //对于某些不需要用到导数的函数设置默认值为0
+        return 0;  
     }
 };
 

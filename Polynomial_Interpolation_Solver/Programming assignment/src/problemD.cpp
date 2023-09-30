@@ -7,12 +7,13 @@ int main()
     std::vector<double> T{0,0,3,3,5,5,8,8,13,13};
     std::vector<double> D_and_S{0,75,225,77,383,80,623,74,993,72};
     Hermite_Formula h(T, D_and_S);
-    //输出预测结果
+
     std::cout << "The car's distance at t = 10s is " << h.solve(10) << " feet" << std::endl;
     std::cout << "The car's speed at t = 10s is " << h.solvediff(10) << " feet/s" << std::endl;
 
     /*
-        求出观测过程速度最大值，并对插值函数进行描点采样，将采样数据存储至probD_result.txt文件以便导入至Python画图
+    Determine the maximum speed in the observed process, sample the interpolation function by plotting points, 
+    and store the sampled data in the probD_result.txt file for importing and plotting in Python.
     */
     std::ofstream fout;
     fout.open("probD_result.txt");

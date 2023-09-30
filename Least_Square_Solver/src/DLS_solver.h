@@ -1,7 +1,7 @@
 #include <iostream>
 #include <eigen3/Eigen/Dense>
 
-// DLS_solver类
+
 class DLS_solver
 {
 public:
@@ -11,7 +11,7 @@ public:
     virtual Eigen::VectorXd solve() = 0;
 };
 
-// Normal_equations类
+
 class Normal_equations : public DLS_solver
 {
 private:
@@ -21,10 +21,9 @@ private:
 public:
     Normal_equations() = default;
 
-    // 构造时输入题目中所需的x和y
     Normal_equations(Eigen::MatrixXd& x, Eigen::MatrixXd& y)
     {
-        // 初始化点集
+        // initialize
         X.resize(x.rows(), 3);
         X.col(0) = Eigen::VectorXd::Ones(x.rows());
         X.col(1) = x;
@@ -34,25 +33,25 @@ public:
 
     ~Normal_equations() override = default;
 
-    // 求解正规方程组
+    // solve normal equations
     Eigen::VectorXd solve() override
     {
-        // 计算Gram matrix G，并求解
+        // calculate Gram matrix G
         G = X.transpose() * X;
         Eigen::VectorXd c = G.ldlt().solve(X.transpose() * y);
 
-        // 返回系数
+        // return coefficient
         return c;
     }
 
-    // 返回Gram matrix G
+    // return Gram matrix G
     Eigen::MatrixXd get_G() const
     {
         return G;
     }
 };
 
-// QR_factorization类
+
 class QR_factorization : public DLS_solver
 {
 private:
@@ -62,10 +61,9 @@ private:
 public:
     QR_factorization() = default;
 
-    // 构造时输入题目中所需的x和y
     QR_factorization(Eigen::MatrixXd& x, Eigen::MatrixXd& y)
     {
-        // 初始化点集
+        // initialize
         X.resize(x.rows(), 3);
         X.col(0) = Eigen::VectorXd::Ones(x.rows());
         X.col(1) = x;
@@ -75,21 +73,19 @@ public:
 
     ~QR_factorization() override = default;
 
-    // QR分解求解方程组
+    // QRfactorization
     Eigen::VectorXd solve() override
     {
-        // QR分解求解
         Eigen::HouseholderQR<Eigen::MatrixXd> qr(X);
         Eigen::VectorXd c = qr.solve(y);
 
-        // 存储得到的R
         R = qr.matrixQR().triangularView<Eigen::Upper>();
 
-        // 返回系数
+        // return coefficient
         return c;
     }
 
-    // 返回矩阵 R1
+    // return R1
     Eigen::MatrixXd get_R1() const 
     { 
         return R.block(0, 0, 3, 3); 
